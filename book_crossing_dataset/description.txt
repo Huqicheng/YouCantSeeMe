@@ -1,0 +1,13 @@
+users_new: Users dataframe without NaN values and split location strings or word embeddings.
+
+users_w_ex_ratings: Users who have contributed at least one explicit rating
+
+users_w_im_ratings: Users who have contributed at least one implicit rating
+
+items_wo_duplicates: Items dataframe without double entries or NaN values
+
+ratings_wo_duplicates: Ratings corresponding to the items_wo_duplicates dataframe. All ratings kept and "transferred".
+
+ratings_expl: Dataframe with the explicit ratings
+
+ratings_impl: Dataframe with the implicit ratings
