@@ -1,6 +1,6 @@
 import numpy as np
 from dataset import BXDataset
-from utils import matrix2sparse
+from utils import matrix2sparse,sparse2matrix
 import sys,os
 def cos_sim(x, y):
     assert len(x) == len(y)
@@ -51,7 +51,7 @@ def cooccuranceMatrix(data_map):
     progress = 0
     cnt = 0
     batch = users.shape[0]/1000
-    
+    index_map = {}
     for indice in users.index:
         cnt+=1
         print cnt,'/',users.shape[0]
@@ -72,36 +72,46 @@ def cooccuranceMatrix(data_map):
                     continue
                 idx2 = items_index[item2]
                 cooccurance[idx1][idx2] = cooccurance[idx1][idx2]+1
-#        if cnt==batch:
-#            cnt=0
-#            sys.stdout.write('#')
-#            sys.stdout.flush()
-    return cooccurance
+                idx1=min(idx1,idx2)
+                idx2=max(idx1,idx2)
+                if index_map.has_key((idx1,idx2)):
+                    continue
+                index_map[(idx1,idx2)] = 1
+    return matrix2sparse(cooccurance,index_map)
+
 
 
 def ToutiaoSimilarity(i,j,cooccurance):
     if i==j:
         return 1.0
+    if cooccurance[i,:].sum()==0 or cooccurance[j,:].sum()==0:
+        return 0.0
     return float(cooccurance[i][j])/float(cooccurance[i,:].sum()*cooccurance[j,:].sum())
 
 def ToutiaoSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy',similarity_path='./models/similarity.npy'):
     # model exists, then return it directly
     if os.path.exists(similarity_path) == True:
-        similarityMatrix = np.loadtxt(similarity_path)
-        return similarity_path
+        similarityMatrix = np.load(similarity_path)[()]
+        return sparse2matrix(similarity_path)
     # get cooccurance if it's existed
     if os.path.exists(cooccur_path) == False:
-        cooccurance = cooccuranceMatrix(data_map)
-        sparse = matrix2sparse(cooccurance)
+        sparse = cooccuranceMatrix(data_map)
         np.save(cooccur_path,sparse)
-#    cooccurance = np.loadtxt(cooccur_path)
-#    item_num = cooccurance.shape[0]
-#    similarityMatrix = np.zeros((item_num,item_num))
-#    for i in range(item_num):
-#        for j in range(item_num-i):
-#            similarityMatrix[i][j] = similarityMatrix[j][i] = ToutiaoSimilarity(i,j,cooccurance)
-#    np.savetxt(similarity_path,similarityMatrix)
-#    return similarityMatrix
+    cooccurance = sparse2matrix(np.load(cooccur_path)[()])
+    item_num = cooccurance.shape[0]
+    similarityMatrix = np.zeros((item_num,item_num))
+    index_map = {}
+    for i in range(item_num):
+        for j in range(item_num-i):
+            similarityMatrix[i][j] = similarityMatrix[j][i] = ToutiaoSimilarity(i,j,cooccurance)
+            if similarityMatrix[i][j]!=0:
+                idx1 = min(i,j)
+                idx2 = max(i,j)
+                index_map[(idx1,idx2)] = 1
+    sparseMatrix = matrix2sparse(similarityMatrix,index_map)
+
+    np.savetxt(similarity_path,sparseMatrix)
+    return similarityMatrix
 
 
 

@@ -1,5 +1,6 @@
 import gensim
 import pandas as pd
+import numpy as np
 from dataset import BXDataset
 from scipy.sparse import csr_matrix
 
@@ -25,17 +26,27 @@ def word2vect(word):
 
 
 
-def matrix2sparse(matrix):
+def matrix2sparse(matrix,index_map):
     row = []
     col = []
     data = []
-    for i in range(matrix.shape[0]):
-        for j in range(matrix.shape[0]-i):
-            if matrix[i][j] != 0:
-                row.append(i)
-                col.append(j)
-                data.append(matrix[i][j])
+    for key in index_map.keys():
+        row.append(key[0])
+        col.append(key[1])
+        data.append(matrix[key[0]][key[1]])
     return csr_matrix((data, (row, col)), shape=(matrix.shape[0], matrix.shape[0]))
 
 def sparse2matrix(sparse):
     return sparse.toarray()
+
+
+
+if __name__ == '__main__':
+    matrix=[[1,2,3],[0,0,0],[0,0,0]]
+    matrix = np.array(matrix)
+    index_map={}
+    index_map[(0,0)] = 1
+    index_map[(0,1)] = 1
+    index_map[(0,2)] = 1
+
+    print matrix2sparse(matrix,index_map)
