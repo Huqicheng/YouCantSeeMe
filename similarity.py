@@ -80,15 +80,17 @@ def cooccuranceMatrix(data_map):
                 index_map[(idx1,idx2)] = 1
         cnt+=1
             
-    return matrix2sparse(cooccurance,index_map)
+    return matrix2sparse(cooccurance,index_map),matrix2sparse(index_map_user_rating,shape=(user.shape[0],item_num))
 
-def cooccuranceSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy'):
+def cooccuranceSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy',user_item_path='./models/user_item.npy'):
     if os.path.exists(cooccur_path) == False:
-        sparse = cooccuranceMatrix(data_map)
-        np.save(cooccur_path,sparse)
+        sparse_co,sparse_user_item = cooccuranceMatrix(data_map)
+        np.save(cooccur_path,sparse_co)
+        np.save(cooccur_path,sparse_user_item)
     
-    cooccurance = sparse2matrix(np.load(cooccur_path)[()])
-    return cooccurance
+    cooccurance = np.load(cooccur_path)[()]
+    item_user = np.load(user_item_path)[()]
+    return cooccurance,user_item_path
 
 
 
@@ -130,7 +132,7 @@ def ToutiaoSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy',sim
 if __name__ == '__main__':
     dataset = BXDataset()
     
-    print cooccuranceMatrix(dataset.get_data('./book_crossing_dataset'))
+    print cooccuranceSimilarityMatrix(dataset.get_data('./book_crossing_dataset'))
 
 
 

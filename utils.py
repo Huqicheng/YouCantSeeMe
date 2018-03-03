@@ -36,6 +36,16 @@ def matrix2sparse(matrix,index_map):
         data.append(matrix[key[0]][key[1]])
     return csr_matrix((data, (row, col)), shape=(matrix.shape[0], matrix.shape[0]))
 
+def matrix2sparse(index_map,shape):
+    row = []
+    col = []
+    data = []
+    for key in index_map.keys():
+        row.append(key[0])
+        col.append(key[1])
+        data.append(index_map[(key[0],key[1])])
+    return csr_matrix((data, (row, col)), shape=(matrix.shape[0], matrix.shape[0]))
+
 def sparse2matrix(sparse):
     return sparse.toarray()
 
