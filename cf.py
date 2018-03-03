@@ -1,5 +1,5 @@
 import numpy as np
-from similarity import ToutiaoSimilarityMatrix
+from similarity import cooccuranceSimilarityMatrix
 
 
 class Recommender(object):
@@ -21,4 +21,4 @@ class ItemCFRecommender(Recommender):
         pass
     
     def fit(self,data_map,options={}):
-        similarityMatrix = ToutiaoSimilarityMatrix()
+        similarityMatrix = cooccuranceSimilarityMatrix(data_map)

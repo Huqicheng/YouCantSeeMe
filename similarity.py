@@ -52,32 +52,43 @@ def cooccuranceMatrix(data_map):
     cnt = 0
     batch = users.shape[0]/1000
     index_map = {}
+    index_map_user_rating = {}
     for indice in users.index:
-        cnt+=1
         print cnt,'/',users.shape[0]
         user = users.loc[indice]
         tmpCooccurance = np.zeros((item_num,item_num))
         # get intersections and traverse the intersections
         # query items bought by user
-        items_user_2 = user_ratings[user_ratings['user_id']==user['user_id']]['isbn']
+        item_user_rating = user_ratings[user_ratings['user_id']==user['user_id']]
+        items_user_2 = item_user_rating['isbn']
         items_user = items_user_2.drop_duplicates()
+        
         if items_user.shape[0]>200:
             continue
         for i in items_user.index:
             item1 = items_user.loc[i]
             idx1 = items_index[item1]
+            index_map_user_rating[(cnt,idx1)] = item_user_rating[item_user_rating['isbn']==item1]['rating'].mean()
             for j in items_user.index:
                 item2 = items_user.loc[j]
                 if item1 == item2:
                     continue
                 idx2 = items_index[item2]
                 cooccurance[idx1][idx2] = cooccurance[idx1][idx2]+1
-                idx1=min(idx1,idx2)
-                idx2=max(idx1,idx2)
                 if index_map.has_key((idx1,idx2)):
                     continue
                 index_map[(idx1,idx2)] = 1
+        cnt+=1
+            
     return matrix2sparse(cooccurance,index_map)
+
+def cooccuranceSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy'):
+    if os.path.exists(cooccur_path) == False:
+        sparse = cooccuranceMatrix(data_map)
+        np.save(cooccur_path,sparse)
+    
+    cooccurance = sparse2matrix(np.load(cooccur_path)[()])
+    return cooccurance
 
 
 
@@ -119,7 +130,7 @@ def ToutiaoSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy',sim
 if __name__ == '__main__':
     dataset = BXDataset()
     
-    data_map = dataset.get_data('./book_crossing_dataset')
-    ToutiaoSimilarityMatrix(data_map)
+    print cooccuranceMatrix(dataset.get_data('./book_crossing_dataset'))
+
 
 
