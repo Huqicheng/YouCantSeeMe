@@ -1,6 +1,6 @@
 import numpy as np
 from dataset import BXDataset
-from utils import matrix2sparse,sparse2matrix
+from utils import matrix2sparse,sparse2matrix,matrix2sparse2
 import sys,os
 def cos_sim(x, y):
     assert len(x) == len(y)
@@ -42,6 +42,7 @@ def cooccuranceMatrix(data_map):
     items_index = data_map['item_index_map']
     # get quantity of items
     item_num = items.shape[0]
+    print 'item_num:',item_num
     # initiate the cooccuranceMatrix
     # the index refers to the row number in data_map['items_wo_duplicates']
     cooccurance = np.zeros((item_num,item_num))
@@ -56,41 +57,34 @@ def cooccuranceMatrix(data_map):
     for indice in users.index:
         print cnt,'/',users.shape[0]
         user = users.loc[indice]
-        tmpCooccurance = np.zeros((item_num,item_num))
         # get intersections and traverse the intersections
         # query items bought by user
         item_user_rating = user_ratings[user_ratings['user_id']==user['user_id']]
         items_user_2 = item_user_rating['isbn']
         items_user = items_user_2.drop_duplicates()
-        
+        for i in items_user.index:
+            item1 = items_user.loc[i]
+            idx1 = items_index[item1]
+            index_map_user_rating[(cnt,idx1)] = item_user_rating[item_user_rating['isbn']==item1]['rating'].mean()
+        cnt+=1
         if items_user.shape[0]>200:
             continue
         for i in items_user.index:
             item1 = items_user.loc[i]
             idx1 = items_index[item1]
-            index_map_user_rating[(cnt,idx1)] = item_user_rating[item_user_rating['isbn']==item1]['rating'].mean()
             for j in items_user.index:
                 item2 = items_user.loc[j]
                 if item1 == item2:
                     continue
                 idx2 = items_index[item2]
                 cooccurance[idx1][idx2] = cooccurance[idx1][idx2]+1
-                if index_map.has_key((idx1,idx2)):
-                    continue
                 index_map[(idx1,idx2)] = 1
-        cnt+=1
-            
-    return matrix2sparse(cooccurance,index_map),matrix2sparse(index_map_user_rating,shape=(user.shape[0],item_num))
 
-def cooccuranceSimilarityMatrix(data_map,cooccur_path='./models/cooccurance.npy',user_item_path='./models/user_item.npy'):
-    if os.path.exists(cooccur_path) == False:
-        sparse_co,sparse_user_item = cooccuranceMatrix(data_map)
-        np.save(cooccur_path,sparse_co)
-        np.save(cooccur_path,sparse_user_item)
-    
-    cooccurance = np.load(cooccur_path)[()]
-    item_user = np.load(user_item_path)[()]
-    return cooccurance,user_item_path
+    return matrix2sparse(cooccurance,index_map),matrix2sparse2(index_map_user_rating,shape=(users.shape[0],items.shape[0]))
+
+def cooccuranceSimilarityMatrix(data_map):
+    sparse_co,sparse_user_item = cooccuranceMatrix(data_map)
+    return sparse_co,sparse_user_item
 
 
 

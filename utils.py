@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from dataset import BXDataset
 from scipy.sparse import csr_matrix
+import json
+import pickle
 
 # train a word2vec model
 
@@ -36,27 +38,36 @@ def matrix2sparse(matrix,index_map):
         data.append(matrix[key[0]][key[1]])
     return csr_matrix((data, (row, col)), shape=(matrix.shape[0], matrix.shape[0]))
 
-def matrix2sparse(index_map,shape):
+def matrix2sparse2(index_map,shape):
     row = []
     col = []
     data = []
-    for key in index_map.keys():
+    for key in index_map:
+        print key
         row.append(key[0])
         col.append(key[1])
-        data.append(index_map[(key[0],key[1])])
-    return csr_matrix((data, (row, col)), shape=(matrix.shape[0], matrix.shape[0]))
+        data.append(index_map[key])
+    return csr_matrix((data, (row, col)), shape=shape)
 
 def sparse2matrix(sparse):
     return sparse.toarray()
 
 
+def save_obj(obj, path ):
+    with open(path, 'wb') as f:
+        f.write(json.dumps(obj))
+
+def load_obj(path):
+    with open(path, 'rb') as f:
+        return json.loads(f.read())
 
 if __name__ == '__main__':
-    matrix=[[1,2,3],[0,0,0],[0,0,0]]
-    matrix = np.array(matrix)
-    index_map={}
-    index_map[(0,0)] = 1
-    index_map[(0,1)] = 1
-    index_map[(0,2)] = 1
-
-    print matrix2sparse(matrix,index_map)
+#    matrix=[[1,2,3],[0,0,0],[0,0,0]]
+#    matrix = np.array(matrix)
+#    index_map={}
+#    index_map[(0,0)] = 1
+#    index_map[(0,1)] = 1
+#    index_map[(0,2)] = 1
+#
+#    print matrix2sparse2(index_map,(3,3))
+    print load_obj('./models/user_index.obj')

@@ -54,9 +54,17 @@ class BXDataset(Dataset):
         index_map = {}
         items = self.data_map['items_wo_duplicates']
         for i in range(items.shape[0]):
-            item = items.loc[i]
+            item = items.iloc[i]
             index_map[item['isbn']] = i
         self.data_map['item_index_map'] = index_map
+        # load index of users to a map
+        user_index_map = {}
+        users = self.data_map['users_w_ex_ratings']
+        for i in range(users.shape[0]):
+            user = users.iloc[i]
+            user_index_map[user['user_id']] = i
+        self.data_map['user_index_map'] = user_index_map
+
         
 
     def describe(self):
