@@ -23,8 +23,25 @@ class ItemCFRecommender(Recommender):
     def __init__(self):
         super(ItemCFRecommender, self).__init__()
     
-    def recommend(self,user,topN=5):
-        pass
+    def get_user_index(self):
+        return self.params['user_index']
+    
+    def get_item_index(self):
+        return self.params['item_index']
+    
+    def get_similarity(self):
+        return self.params['similarity_matrix']
+    
+    def get_user_item(self):
+        return self.params['user_item_matrix']
+
+    def recommend(self,user_id,topN=5):
+        user_index = self.params['user_index'][user_id]
+        user_item = self.params['user_item_matrix'][user_index,:]
+        sim_mat = self.params['similarity_matrix']
+        score_vect = sim_mat.dot(user_item.T)
+        return score_vect
+
     
     def fit(self,data_map,options={}):
         similarityMatrix,user_item_matrix = cooccuranceSimilarityMatrix(data_map)

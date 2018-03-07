@@ -7,6 +7,9 @@ class Dataset(object):
         self.descriptions = {}
         pass
 
+    def get_data_map(self):
+        return self.data_map
+
     def get_data(self,root_dir_path):
         self.load_original_data(root_dir_path)
         self.preprocessing()
@@ -26,8 +29,6 @@ class BXDataset(Dataset):
     def __init__(self):
         super(BXDataset, self).__init__()
 
-    def get_data_map(self):
-        return self.data_map
 
     def load_original_data(self,root_dir_path):
         users_new = pd.read_csv(root_dir_path+'/users_new.csv', sep=';', encoding='latin-1',low_memory=False)
